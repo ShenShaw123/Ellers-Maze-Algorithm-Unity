@@ -62,19 +62,18 @@ public class EllersMazeGenerator : MonoBehaviour
 
         //Maze Generation Loop:
         List<(int[], int)> row = first_row;
-        List<int[]> sameSetWalls = new List<int[]>();
         for (int z = 0; z < gridSpawner.height; z++)
         {
             //Step (5) Finalize Row:
             if (z == gridSpawner.height - 1)
             {
                 PlaceWalls_SameDir(IncreaseAxisRow(1, row), Vector3.right);
-                FinalRow(row, sameSetWalls);
+                FinalRow(row);
                 break;
             }
 
             //Step (3), Vertical Walls & Joining:
-            var joined_row = JoinRow_VerticalWalls(row, sameSetWalls);
+            var joined_row = JoinRow_VerticalWalls(row);
             WorldText_Row(joined_row, Color.red, 1);
 
             //Step (4), Bottom Walls:
@@ -83,11 +82,9 @@ public class EllersMazeGenerator : MonoBehaviour
             //Step (5 + 2), Adding New Row:
             row = IncreaseAxisRow(1, EmptyCells_NewRow(joined_row, b_wall_loc));
         }
-
-
     }
 
-    private List<(int[], int)> JoinRow_VerticalWalls(List<(int[], int)> row, List<int[]> sameSetWalls)
+    private List<(int[], int)> JoinRow_VerticalWalls(List<(int[], int)> row)
     {
         var row_copy = new List<(int[], int)>(row);
 
@@ -111,8 +108,14 @@ public class EllersMazeGenerator : MonoBehaviour
                 {
                     int rand_num = UnityEngine.Random.Range(0, 101);
 
-                    if (inRange_Inclusive(rand_num, 0, R_WallSpawnPercentage)) join = false;
-                    if (inRange_Inclusive(rand_num, 0, R_WallSpawnPercentage)) join = true;
+                    if (inRange_Inclusive(rand_num, 0, R_WallSpawnPercentage))
+                    {
+                        join = false;
+                    }
+                    else
+                    {
+                        join = true;
+                    }
                 }
 
                 //Wall:
@@ -121,11 +124,6 @@ public class EllersMazeGenerator : MonoBehaviour
                     var coord = next_cell.Item1;
 
                     PlaceWall_XZ(Vector3.forward, coord[0], coord[1]);
-
-                    if (sameSet == true)
-                    {
-                        sameSetWalls.Add(new int[] { next_cell.Item1[0], next_cell.Item1[1] + 1 });
-                    }
                 }
                 //Join"
                 else
@@ -184,8 +182,6 @@ public class EllersMazeGenerator : MonoBehaviour
         {
             var coord = cellTup.Item1
 ;           PlaceWall_XZ(Vector3.right, coord[0], coord[1]);
-
-            Debug.Log("Placing BWALL");
         }
     }
 
@@ -215,17 +211,9 @@ public class EllersMazeGenerator : MonoBehaviour
         return new_row;
     }
 
-    private void FinalRow(List<(int[], int)> row, List<int[]>  b_wall_postions)
+    private void FinalRow(List<(int[], int)> row)
     {
-        Debug.Log("FINAL ROW");
-
         PlaceWall_XZ(Vector3.forward, row[0].Item1[0], row[0].Item1[1]);
-
-        foreach (var pos in b_wall_postions)
-        {
-            PlaceWall_XZ(Vector3.forward, pos[0], pos[1]);
-        }
-
         PlaceWall_XZ(Vector3.forward, row[row.Count - 1].Item1[0] + 1, row[row.Count - 1].Item1[1]);
     }
 
